@@ -1,8 +1,6 @@
 package vn.edu.fpt.fa24.Fragments;
 
-import android.database.Cursor;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,7 +9,6 @@ import android.widget.ListView;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import vn.edu.fpt.fa24.Adapter.MajorAdapter;
@@ -36,31 +33,10 @@ public class MajorFragment extends Fragment {
         majorListView = view.findViewById(R.id.majorListView);
         databaseHelper = DatabaseHelper.getInstance(getActivity());
 
-        List<Major> majors = getAllMajors();
+        List<Major> majors = databaseHelper.getAllMajors();
         majorAdapter = new MajorAdapter(getActivity(), majors);
         majorListView.setAdapter(majorAdapter);
+
         return view;
-    }
-
-    private List<Major> getAllMajors() {
-        List<Major> majorList = new ArrayList<>();
-        Cursor cursor = databaseHelper.getAllMajors(); // This should be implemented in DatabaseHelper
-
-        if (cursor != null && cursor.moveToFirst()) {
-            do {
-                int idMajor = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_ID_MAJOR));
-                String nameMajor = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_NAME_MAJOR));
-
-                Log.d("MajorData", "ID: " + idMajor + ", Name: " + nameMajor); // Debug log
-
-                Major major = new Major(idMajor, nameMajor);
-                majorList.add(major);
-            } while (cursor.moveToNext());
-            cursor.close();
-        } else {
-            Log.d("MajorData", "No majors found in database.");
-        }
-
-        return majorList;
     }
 }

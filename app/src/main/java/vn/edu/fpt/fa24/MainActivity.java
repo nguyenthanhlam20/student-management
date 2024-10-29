@@ -1,9 +1,8 @@
 package vn.edu.fpt.fa24;
 
+import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
 import android.view.MenuItem;
-import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.databinding.DataBindingUtil;
@@ -25,33 +24,35 @@ public class MainActivity extends AppCompatActivity {
         mSectionsPagerAdapter = new HomePageFragmentAdapter(getSupportFragmentManager());
         binding.viewpager.setAdapter(mSectionsPagerAdapter);
         binding.viewpager.setOffscreenPageLimit(0);
+        binding.plusBtn.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, AddStudentActivity.class);
+            startActivity(intent);
+            finish();
+        });
 
-        hideSplashView();
-    }
-
-    public void hideSplashView() {
-        Handler handler = new Handler();
-        handler.postDelayed(() -> binding.splashLayout.setVisibility(View.GONE), 1500);
         handleBottomNav();
     }
 
     private void handleBottomNav() {
         binding.bottomNavigation.setOnNavigationItemSelectedListener(menuItem -> {
-
             switch (menuItem.getItemId()) {
                 case R.id.home:
                     binding.viewpager.setCurrentItem(0);
-                    binding.title.setText("Student");
+                    binding.title.setText("Students");
                     binding.plusBtn.setOnClickListener(v -> {
-
+                        Intent intent = new Intent(MainActivity.this, AddStudentActivity.class);
+                        startActivity(intent);
+                        finish();
                     });
                     break;
 
                 case R.id.profile:
                     binding.viewpager.setCurrentItem(2);
-                    binding.title.setText("Major");
+                    binding.title.setText("Majors");
                     binding.plusBtn.setOnClickListener(v -> {
-
+                        Intent intent = new Intent(MainActivity.this, AddMajorActivity.class);
+                        startActivity(intent);
+                        finish();
                     });
                     break;
 
@@ -77,12 +78,22 @@ public class MainActivity extends AppCompatActivity {
                 switch (prevMenuItem.getItemId()) {
                     case R.id.home:
                         binding.viewpager.setCurrentItem(0);
-                        binding.title.setText("Student");
+                        binding.title.setText("Students");
+                        binding.plusBtn.setOnClickListener(v -> {
+                            Intent intent = new Intent(MainActivity.this, AddStudentActivity.class);
+                            startActivity(intent);
+                            finish();
+                        });
                         break;
 
                     case R.id.profile:
                         binding.viewpager.setCurrentItem(2);
-                        binding.title.setText("Major");
+                        binding.title.setText("Majors");
+                        binding.plusBtn.setOnClickListener(v -> {
+                            Intent intent = new Intent(MainActivity.this, AddMajorActivity.class);
+                            startActivity(intent);
+                            finish();
+                        });
                         break;
 
                 }

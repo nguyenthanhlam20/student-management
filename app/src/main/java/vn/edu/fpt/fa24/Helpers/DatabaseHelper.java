@@ -5,9 +5,15 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import vn.edu.fpt.fa24.Models.Major;
+import vn.edu.fpt.fa24.Models.Student;
+
 public class DatabaseHelper extends SQLiteOpenHelper {
 
-    private static final String DATABASE_NAME = "StudentManagementApp.db";
+    private static final String DATABASE_NAME = "StudentManager.db";
     private static final int DATABASE_VERSION = 1;
     private static DatabaseHelper instance;
 
@@ -24,6 +30,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String TABLE_MAJOR = "Major";
     public static final String COLUMN_ID_MAJOR = "IDMajor";
     public static final String COLUMN_NAME_MAJOR = "nameMajor";
+    public static final String COLUMN_MAJOR = "major";
 
     // Private constructor to prevent direct instantiation
     private DatabaseHelper(Context context) {
@@ -34,8 +41,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         // Insert sample data into Major
         String[] majors = {
                 "Computer Science", "Business", "Engineering",
-                "Mathematics", "Psychology", "Biology",
-                "Physics", "History", "Art", "Chemistry"
+                "Mathematics", "Psychology"
         };
 
         for (int i = 0; i < majors.length; i++) {
@@ -50,7 +56,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 {"Alice", "Female", "2000-01-01", "alice@example.com", "123 Main St.", "1"},
                 {"Bob", "Male", "2000-01-02", "bob@example.com", "456 Elm St.", "2"},
                 {"Charlie", "Male", "2000-01-03", "charlie@example.com", "789 Oak St.", "3"},
-                {"David", "Male", "2000-01-04", "david@example.com", "101 Pine St.", "4"}
         };
 
         for (String[] student : students) {
@@ -101,69 +106,50 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         onCreate(db);
     }
 
-    // CRUD Operations for Student Table
-
-    // Insert a new student
-    public long insertStudent(String name, String gender, String date, String email, String address, int idMajor) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues contentValues = new ContentValues();
-        contentValues.put(COLUMN_NAME, name);
-        contentValues.put(COLUMN_GENDER, gender);
-        contentValues.put(COLUMN_DATE, date);
-        contentValues.put(COLUMN_EMAIL, email);
-        contentValues.put(COLUMN_ADDRESS, address);
-        contentValues.put(COLUMN_ID_MAJOR, idMajor);
-        return db.insert(TABLE_STUDENT, null, contentValues);
-    }
-
-    // Update a student
-    public int updateStudent(int id, String name, String gender, String date, String email, String address, int idMajor) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues contentValues = new ContentValues();
-        contentValues.put(COLUMN_NAME, name);
-        contentValues.put(COLUMN_GENDER, gender);
-        contentValues.put(COLUMN_DATE, date);
-        contentValues.put(COLUMN_EMAIL, email);
-        contentValues.put(COLUMN_ADDRESS, address);
-        contentValues.put(COLUMN_ID_MAJOR, idMajor);
-        return db.update(TABLE_STUDENT, contentValues, COLUMN_ID + " = ?", new String[]{String.valueOf(id)});
-    }
-
-    // Delete a student
-    public int deleteStudent(int id) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        return db.delete(TABLE_STUDENT, COLUMN_ID + " = ?", new String[]{String.valueOf(id)});
-    }
-
-    // Get a single student by ID
-    public Cursor getStudent(int id) {
-        SQLiteDatabase db = this.getReadableDatabase();
-        return db.query(TABLE_STUDENT, null, COLUMN_ID + " = ?", new String[]{String.valueOf(id)}, null, null, null);
-    }
-
     // Get all students
-    public Cursor getAllStudents() {
+    public List<Student> getAllStudents() {
+        List<Student> studentList = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
-        return db.query(TABLE_STUDENT, null, null, null, null, null, COLUMN_NAME + " ASC");
+
+        // Query to join Student and Major tables and sort by student name
+        String query = "SELECT Student.ID, Student.name, Student.gender, Student.date, " +
+                "Student.email, Student.Address, Student.idMajor, Major.nameMajor " +
+                "FROM Student " +
+                "JOIN Major ON Student.idMajor = Major.IDMajor " +
+                "ORDER BY Student.name ASC";
+
+        Cursor cursor = db.rawQuery(query, null);
+
+        // Check if cursor is not null and has data
+        if (cursor != null && cursor.moveToFirst()) {
+            do {
+                // Create a new Student object with data from the cursor
+                int id = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ID));
+                String name = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_NAME));
+                String gender = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_GENDER));
+                String email = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_EMAIL));
+                String address = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_ADDRESS));
+                String date = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_DATE));
+                int majorId = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ID_MAJOR));
+                String major = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_NAME_MAJOR));
+
+                // Create Student object and add to list
+                Student student = new Student(id, name, gender, email, address, date,  majorId);
+                student.setMajor(major);
+
+                studentList.add(student);
+            } while (cursor.moveToNext()); // Move to the next record
+            cursor.close(); // Close cursor to free resources
+        }
+
+        return studentList; // Return the list of students
     }
 
-    // CRUD Operations for Major Table
-
-    // Insert a new major
-    public long insertMajor(String nameMajor) {
+    public int deleteStudent(int studentId) {
         SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues contentValues = new ContentValues();
-        contentValues.put(COLUMN_NAME_MAJOR, nameMajor);
-        return db.insert(TABLE_MAJOR, null, contentValues);
+        return db.delete(TABLE_STUDENT, "ID = ?", new String[]{String.valueOf(studentId)});
     }
 
-    // Update a major
-    public int updateMajor(int idMajor, String nameMajor) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues contentValues = new ContentValues();
-        contentValues.put(COLUMN_NAME_MAJOR, nameMajor);
-        return db.update(TABLE_MAJOR, contentValues, COLUMN_ID_MAJOR + " = ?", new String[]{String.valueOf(idMajor)});
-    }
 
     // Delete a major
     public int deleteMajor(int idMajor) {
@@ -171,16 +157,106 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return db.delete(TABLE_MAJOR, COLUMN_ID_MAJOR + " = ?", new String[]{String.valueOf(idMajor)});
     }
 
-    // Get a single major by ID
-    public Cursor getMajor(int idMajor) {
+    // Get all majors
+    public List<Major> getAllMajors() {
+        List<Major> majorList = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
-        return db.query(TABLE_MAJOR, null, COLUMN_ID_MAJOR + " = ?", new String[]{String.valueOf(idMajor)}, null, null, null);
+        Cursor cursor = db.query(TABLE_MAJOR, null, null, null, null, null, null);
+
+        if (cursor != null && cursor.moveToFirst()) {
+            do {
+                int id = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ID_MAJOR));
+                String name = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_NAME_MAJOR));
+                majorList.add(new Major(id, name));
+            } while (cursor.moveToNext());
+            cursor.close();
+        }
+        return majorList;
     }
 
-    // Get all majors
-    public Cursor getAllMajors() {
+    public Student getStudentById(int id) {
         SQLiteDatabase db = this.getReadableDatabase();
-        return db.query(TABLE_MAJOR, null, null, null, null, null, COLUMN_NAME_MAJOR + " ASC");
+
+        String query = "SELECT Student.ID, Student.name, Student.gender, Student.email, Student.address, " +
+                "Student.date, Major.nameMajor AS major " +
+                "FROM " + TABLE_STUDENT + " AS Student " +
+                "JOIN " + TABLE_MAJOR + " AS Major " +
+                "ON Student.idMajor = Major.IDMajor " +
+                "WHERE Student.ID = ?";
+
+        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(id)});
+
+        if (cursor != null && cursor.moveToFirst()) {
+            Student student = new Student(
+                    cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ID)),
+                    cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_NAME)),
+                    cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_GENDER)),
+                    cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_EMAIL)),
+                    cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_ADDRESS)),
+                    cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_DATE)),
+                    cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_MAJOR)) // Retrieved from Major table
+            );
+            cursor.close();
+            return student;
+        }
+        return null;
+    }
+
+    public boolean updateStudent(Student student) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_NAME, student.getName());
+        values.put(COLUMN_GENDER, student.getGender());
+        values.put(COLUMN_EMAIL, student.getEmail());
+        values.put(COLUMN_DATE, student.getDate());
+        values.put(COLUMN_ADDRESS, student.getAddress());
+        values.put(COLUMN_ID_MAJOR, student.getMajorId());
+
+        int rows = db.update(TABLE_STUDENT, values, "ID = ?", new String[]{String.valueOf(student.getId())});
+        return rows > 0;
+    }
+
+    public boolean addStudent(Student student) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_NAME, student.getName());
+        values.put(COLUMN_GENDER, student.getGender());
+        values.put(COLUMN_EMAIL, student.getEmail());
+        values.put(COLUMN_ADDRESS, student.getAddress());
+        values.put(COLUMN_DATE, student.getDate());
+        values.put(COLUMN_ID_MAJOR, student.getMajorId()); // Assuming you modified your Student class to include major ID
+
+        long result = db.insert(TABLE_STUDENT, null, values);
+        return result != -1; // Return true if insertion was successful
+    }
+
+    public boolean addMajor(Major major) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_NAME_MAJOR, major.getName());
+
+        long result = db.insert(TABLE_MAJOR, null, values);
+        return result != -1; // Return true if insertion was successful
+    }
+
+    public Major getMajorById(int id) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.query(TABLE_MAJOR, null, "IDMajor = ?", new String[]{String.valueOf(id)}, null, null, null);
+        if (cursor != null && cursor.moveToFirst()) {
+            String name = cursor.getString(cursor.getColumnIndexOrThrow("nameMajor"));
+            cursor.close();
+            return new Major(id, name); // Assuming your Major class has a constructor that takes ID and name
+        }
+        return null;
+    }
+
+    public boolean updateMajor(Major major) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("nameMajor", major.getName());
+
+        int rowsAffected = db.update(TABLE_MAJOR, values, "IDMajor = ?", new String[]{String.valueOf(major.getId())});
+        return rowsAffected > 0; // Return true if update was successful
     }
 }
 

@@ -12,17 +12,9 @@
         <RelativeLayout
             android:id="@+id/splashLayout"
             android:layout_width="match_parent"
-            android:background="@color/specialColor"
             android:elevation="20dp"
             android:layout_height="match_parent">
 
-            <com.cunoraz.gifview.library.GifView
-                android:id="@+id/video"
-                android:layout_width="wrap_content"
-                android:layout_marginTop="250dp"
-                android:layout_centerHorizontal="true"
-                android:layout_height="wrap_content"
-               app:gif="@drawable/logo" />
 
         </RelativeLayout>
         <RelativeLayout
@@ -38,7 +30,7 @@
                 android:layout_centerHorizontal="true"
                 android:layout_margin="15dp"
                 android:fontFamily="@font/nunito_bold"
-                android:text="Home"
+                android:text="Students"
                 android:textColor="#fff"
                 android:textSize="15sp" />
 
@@ -54,6 +46,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
+                    android:backgroundTint="@color/white"
                     android:src="@drawable/ic_plus" />
 
 

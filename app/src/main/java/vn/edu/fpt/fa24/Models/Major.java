@@ -1,22 +1,36 @@
 package vn.edu.fpt.fa24.Models;
 
 public class Major {
-    private int idMajor;
-    private String nameMajor;
+    private int id;
+    private String name;
 
-    // Constructor
-    public Major(int idMajor, String nameMajor) {
-        this.idMajor = idMajor;
-        this.nameMajor = nameMajor;
+    public Major(int id, String name) {
+        this.id = id;
+        this.name = name;
     }
 
-    // Getters
-    public int getIdMajor() {
-        return idMajor;
+    public Major(String name) {
+        this.name = name;
     }
 
-    public String getNameMajor() {
-        return nameMajor;
+    public int getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof Major)) return false;
+        Major major = (Major) obj;
+        return id == major.id && name.equals(major.name);
+    }
+
+    @Override
+    public String toString() {
+        return name; // This will display the name in the spinner
     }
 }
-
